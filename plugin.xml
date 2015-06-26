@@ -19,6 +19,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <preference name="webView" value="org.crosswalk.engine.XWalkWebViewEngine" />
+            <preference name="lib_mode" value="embedd" />
         </config-file>
 
         <source-file src="src/android/XWalkWebViewEngine.java" target-dir="src/org/crosswalk/engine" />
@@ -30,4 +31,42 @@
 
         <framework src="src/android/xwalk.gradle" custom="true" type="gradleReference" />
     </platform>
+
+    <info>
+        If you want use Crosswalk Project Runtime in shared mode following the below instructions.
+        More information you can get from https://crosswalk-project.org/documentation/shared_mode.html.
+            1, Permissions
+               Shared mode requires the following permissions to be enabled:
+               ACCESS_NETWORK_STATE, ACCESS_WIFI_STATE, INTERNET, WRITE_EXTERNAL_STORAGE
+
+            2, XWalkApplication
+               You may use XWalkApplication directly in the Android manifest:
+               application android:name="org.xwalk.core.XWalkApplication"
+                   ...
+               application
+
+            3, XWalkActivity
+               All routines using embedding API should be inside onXWalkReady():
+               public class sharedmode extends CordovaActivity
+               {
+                   @Override
+                   public void onCreate(Bundle savedInstanceState)
+                   {
+                       super.onCreate(savedInstanceState);
+                   }
+
+                   @Override
+                   protected void onXWalkReady() {
+                       super.init();
+                       loadUrl(launchUrl);
+                  }
+             }
+
+           4, CordovaActivity extends XWalkActivity:
+              import org.xwalk.core.XWalkActivity;
+              public abstract class CordovaActivity extends XWalkActivity implements CordovaInterface
+
+           5, Change the value of lib_mode to shared mode in config.xml
+              preference name="lib_mode" value="shared"
+    </info>
 </plugin>

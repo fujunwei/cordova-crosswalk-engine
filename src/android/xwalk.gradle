@@ -17,8 +17,13 @@
        under the License.
 */
 
-def DEFAULT_VERSION = "org.xwalk:xwalk_core_library_beta:13+"
+def DEFAULT_VERSION = "13+"
 def DEFAULT_COMMAND_LINE = "--disable-pull-to-refresh-effect"
+def DEFAULT_LIB_MODE = "embedd"
+def SHARED_MODE = "shared"
+def DEFAULT_GROUP_ID = "org.xwalk:"
+def SHARED_ARTIFACT_ID = "xwalk_shared_library_beta:"
+def EMBEDD_ARTIFACT_ID = "xwalk_core_library_beta:"
 
 repositories {
   maven {
@@ -49,26 +54,32 @@ def getConfigPreference(name, defaultValue) {
     return ret
 }
 
+if (!project.hasProperty('lib_mode')) {
+    def mode = getConfigPreference("lib_mode", DEFAULT_LIB_MODE)
+    println mode
+    ext.artifactid = mode == SHARED_MODE ? SHARED_ARTIFACT_ID : EMBEDD_ARTIFACT_ID;
+    ext.defaultVersion = DEFAULT_GROUP_ID + ext.artifactid + DEFAULT_VERSION;
+}
 // Set defaults before project's build-extras.gradle
 if (!project.hasProperty('xwalkVersion')) {
-    ext.xwalkVersion = getConfigPreference("xwalkversion", DEFAULT_VERSION)
+    ext.xwalkVersion = getConfigPreference("xwalkversion", defaultVersion)
 }
 if (!project.hasProperty('xwalkCommandLine')) {
     ext.xwalkCommandLine = getConfigPreference("xwalkcommandline", DEFAULT_COMMAND_LINE)
 }
-
 // Apply values after project's build-extras.gradle
 cdvPluginPostBuildExtras.add({
 
     def xwalkSpec = xwalkVersion
     if ((xwalkSpec =~ /:/).count == 1) {
-        xwalkSpec = "org.xwalk:${xwalkSpec}"
+        xwalkSpec = DEFAULT_GROUP_ID + xwalkSpec
     } else if ((xwalkSpec =~ /:/).count == 0) {
         if (xwalkSpec ==~ /\d+/) {
             xwalkSpec = "${xwalkSpec}+"
         }
-        xwalkSpec = "org.xwalk:xwalk_core_library_beta:${xwalkSpec}"
+        xwalkSpec = DEFAULT_GROUP_ID + artifactid + xwalkSpec
     }
+    println xwalkSpec
 
     dependencies {
         compile xwalkSpec
